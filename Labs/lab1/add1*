@@ -1,0 +1,101 @@
+import sys
+import math
+
+class BiquadraticEquation:
+    
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.roots = set()
+
+    def solve(self):
+        print(f"\nРешаем: {self.a}x^4 + {self.b}x^2 + {self.c} = 0")
+        
+        if self.a == 0:
+            self._solve_linear_or_quadratic()
+        else:
+            self._solve_biquadratic()
+            
+        return sorted(list(self.roots))
+
+    def _solve_linear_or_quadratic(self):
+        if self.b == 0:
+            if self.c == 0:
+                print("Уравнение 0 = 0. Бесконечное множество решений.")
+            else:
+                print(f"Уравнение {self.c} = 0. Решений нет.")
+        else:
+            y = -self.c / self.b
+            if y == 0:
+                self.roots.add(0.0)
+            elif y > 0:
+                root_val = math.sqrt(y)
+                self.roots.add(root_val)
+                self.roots.add(-root_val)
+            else:
+                print("Решений нет (x^2 не может быть отрицательным).")
+
+    def _solve_biquadratic(self):
+        d = self.b**2 - 4 * self.a * self.c
+        print(f"Дискриминант (для y=x^2): D = {d}")
+
+        if d >= 0:
+            y1 = (-self.b + math.sqrt(d)) / (2 * self.a)
+            y2 = (-self.b - math.sqrt(d)) / (2 * self.a)
+            
+            print(f"Промежуточные корни (для y): y1 = {y1}, y2 = {y2}")
+            
+            positive_y_roots = {y for y in [y1, y2] if y >= 0}
+
+            if not positive_y_roots:
+                print("Действительных корней нет (оба y < 0).")
+            
+            for y in positive_y_roots:
+                if y == 0:
+                    self.roots.add(0.0)
+                else:
+                    root_val = math.sqrt(y)
+                    self.roots.add(root_val)
+                    self.roots.add(-root_val)
+        else:
+            print("Действительных корней нет (дискриминант < 0).")
+
+def get_coefficient(name, cli_arg=None):
+    if cli_arg is not None:
+        try:
+            value = float(cli_arg)
+            print(f"Коэффициент {name} из командной строки: {value}")
+            return value
+        except ValueError:
+            print(f"Некорректный параметр для {name}. Введите с клавиатуры.")
+    
+    while True:
+        try:
+            value = float(input(f"Введите коэффициент {name}: "))
+            return value
+        except ValueError:
+            print(f"Ошибка: введите корректное число для {name}.")
+
+def main():
+    args = sys.argv[1:] 
+    
+    a_arg = args[0] if len(args) > 0 else None
+    b_arg = args[1] if len(args) > 1 else None
+    c_arg = args[2] if len(args) > 2 else None
+
+    a = get_coefficient("A", a_arg)
+    b = get_coefficient("B", b_arg)
+    c = get_coefficient("C", c_arg)
+
+    equation = BiquadraticEquation(a, b, c)
+    roots = equation.solve()
+
+    if roots:
+        print(f"\nНайдены действительные корни (x): {roots}")
+        print(f"Всего корней: {len(roots)}")
+    elif a != 0 or b != 0 or c != 0:
+        print("\nДействительных корней не найдено.")
+
+if __name__ == "__main__":
+    main()
