@@ -1,0 +1,106 @@
+const readlineSync = require('readline-sync');
+const math = Math;
+
+function getCoefficient(name, cliArg) {
+    if (cliArg !== undefined) {
+        const value = parseFloat(cliArg);
+        if (!isNaN(value)) {
+            console.log(`Коэффициент ${name} из командной строки: ${value}`);
+            return value;
+        } else {
+            console.log(`Некорректный параметр для ${name}. Введите с клавиатуры.`);
+        }
+    }
+
+    while (true) {
+        const input = readlineSync.question(`Введите коэффициент ${name}: `);
+        const value = parseFloat(input);
+        if (!isNaN(value)) {
+            return value;
+        } else {
+            console.log(`Ошибка: введите корректное число для ${name}.`);
+        }
+    }
+}
+
+function solveEquation(a, b, c) {
+    console.log(`\nРешаем: ${a}x^4 + ${b}x^2 + ${c} = 0`);
+
+    const finalRoots = new Set();
+
+    if (a === 0) {
+        if (b === 0) {
+            if (c === 0) {
+                console.log("Уравнение 0 = 0. Бесконечное множество решений.");
+            } else {
+                console.log(`Уравнение ${c} = 0. Решений нет.`);
+            }
+        } else {
+            const y = -c / b;
+            if (y === 0) {
+                finalRoots.add(0.0);
+            } else if (y > 0) {
+                const rootVal = math.sqrt(y);
+                finalRoots.add(rootVal);
+                finalRoots.add(-rootVal);
+            } else {
+                console.log("Решений нет (x^2 не может быть отрицательным).");
+            }
+        }
+    } else {
+        const d = b ** 2 - 4 * a * c;
+        console.log(`Дискриминант (для y=x^2): D = ${d}`);
+
+        if (d >= 0) {
+            const y1 = (-b + math.sqrt(d)) / (2 * a);
+            const y2 = (-b - math.sqrt(d)) / (2 * a);
+
+            console.log(`Промежуточные корни (для y): y1 = ${y1}, y2 = ${y2}`);
+
+            const positiveYRoots = new Set();
+            if (y1 >= 0) positiveYRoots.add(y1);
+            if (y2 >= 0) positiveYRoots.add(y2);
+
+            if (positiveYRoots.size === 0) {
+                console.log("Действительных корней нет (оба y < 0).");
+            }
+
+            for (const y of positiveYRoots) {
+                if (y === 0) {
+                    finalRoots.add(0.0);
+                } else {
+                    const rootVal = math.sqrt(y);
+                    finalRoots.add(rootVal);
+                    finalRoots.add(-rootVal);
+                }
+            }
+        } else {
+            console.log("Действительных корней нет (дискриминант < 0).");
+        }
+    }
+
+    return Array.from(finalRoots).sort((n1, n2) => n1 - n2);
+}
+
+function main() {
+    const args = process.argv.slice(2);
+
+    const aArg = args.length > 0 ? args[0] : undefined;
+    const bArg = args.length > 1 ? args[1] : undefined;
+    const cArg = args.length > 2 ? args[2] : undefined;
+
+    const a = getCoefficient("A", aArg);
+    const b = getCoefficient("B", bArg);
+    const c = getCoefficient("C", cArg);
+
+    const roots = solveEquation(a, b, c);
+
+    if (roots.length > 0) {
+        console.log(`\nНайдены действительные корни (x): [${roots.join(', ')}]`);
+        console.log(`Всего корней: ${roots.length}`);
+    } else if (a !== 0 || b !== 0 || c !== 0) {
+        console.log("\nДействительных корней не найдено.");
+    }
+}
+
+main();
